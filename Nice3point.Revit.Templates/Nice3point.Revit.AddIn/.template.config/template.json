@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json.schemastore.org/template",
+  "author": "Nice3point",
+  "name": "Revit AddIn",
+  "shortName": "revit-addin",
+  "identity": "Nice3point.Revit.AddIn",
+  "defaultName": "RevitAddIn",
+  "sourceName": "Nice3point.Revit.AddIn.1",
+  "description": "Template for creating single-project Revit add-in",
+  "classifications": [
+    "Revit",
+    "Desktop",
+    "AddIn"
+  ],
+  "tags": {
+    "type": "project",
+    "language": "C#",
+    "platform": ".NET"
+  },
+  "preferNameDirectory": true,
+  "placeholderFilename": "keep.folder",
+  "guids": [
+    "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA"
+  ],
+  "symbols": {
+    "addinManifestType": {
+      "type": "parameter",
+      "displayName": "Add-In type",
+      "datatype": "choice",
+      "description": "Manifest registration type determining the add-in entry point",
+      "choices": [
+        {
+          "choice": "application",
+          "displayName": "Application",
+          "description": "Registers the add-in in the manifest with the Application type"
+        },
+        {
+          "choice": "dbApplication",
+          "displayName": "DB Application",
+          "description": "Registers the add-in in the manifest with the DB Application type"
+        },
+        {
+          "choice": "command",
+          "displayName": "Command",
+          "description": "Registers the add-in in the manifest with the Command type"
+        }
+      ],
+      "defaultValue": "application"
+    },
+    "addinUiWpf": {
+      "type": "parameter",
+      "displayName": "WPF support",
+      "datatype": "bool",
+      "description": "MVVM architecture and WPF UI components",
+      "defaultValue": "true"
+    },
+    "addinDiMode": {
+      "type": "parameter",
+      "displayName": "Dependency Injection",
+      "datatype": "choice",
+      "description": "Dependency Injection implementation for object lifetime management",
+      "choices": [
+        {
+          "choice": "disabled",
+          "displayName": "Disabled",
+          "description": "The add-in will not use DI"
+        },
+        {
+          "choice": "container",
+          "displayName": "Service container",
+          "description": "Use Microsoft.Extensions.DependencyInjection implementation"
+        },
+        {
+          "choice": "hosting",
+          "displayName": "Hosting",
+          "description": "Use Microsoft.Extensions.Hosting implementation"
+        }
+      ],
+      "defaultValue": "disabled"
+    },
+    "addinLogging": {
+      "type": "parameter",
+      "displayName": "Serilog support",
+      "datatype": "bool",
+      "description": "Serilog infrastructure for structured diagnostic logging",
+      "defaultValue": "false"
+    },
+    "isCommandAddin": {
+      "type": "computed",
+      "value": "addinManifestType == \"command\""
+    },
+    "isApplicationAddin": {
+      "type": "computed",
+      "value": "addinManifestType == \"application\""
+    },
+    "isDbApplicationAddin": {
+      "type": "computed",
+      "value": "addinManifestType == \"dbApplication\""
+    },
+    "diContainer": {
+      "type": "computed",
+      "value": "addinDiMode == \"container\""
+    },
+    "diHosting": {
+      "type": "computed",
+      "value": "addinDiMode == \"hosting\""
+    },
+    "useUi": {
+      "type": "computed",
+      "value": "addinUiWpf && addinManifestType != \"dbApplication\""
+    },
+    "useDi": {
+      "type": "computed",
+      "value": "addinDiMode != \"disabled\""
+    }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "!isApplicationAddin",
+          "exclude": [
+            "Resources/Icons/**"
+          ]
+        },
+        {
+          "condition": "isCommandAddin",
+          "exclude": [
+            "Application.cs"
+          ]
+        },
+        {
+          "condition": "isDbApplicationAddin",
+          "exclude": [
+            "Commands/**"
+          ]
+        },
+        {
+          "condition": "!useUi",
+          "exclude": [
+            "Models/**",
+            "Views/**",
+            "ViewModels/**"
+          ]
+        },
+        {
+          "condition": "!diHosting",
+          "exclude": [
+            "Configuration/HostingConfiguration.cs"
+          ]
+        },
+        {
+          "condition": "!useDi",
+          "exclude": [
+            "Host.cs"
+          ]
+        },
+        {
+          "condition": "!addinLogging || !useDi",
+          "exclude": [
+            "Configuration/LoggerConfiguration.cs"
+          ]
+        }
+      ]
+    }
+  ],
+  "primaryOutputs": [
+    {
+      "condition": "isApplicationAddin || isDbApplicationAddin",
+      "path": "Application.cs"
+    },
+    {
+      "condition": "isCommandAddin",
+      "path": "Commands/StartupCommand.cs"
+    }
+  ],
+  "postActions": [
+    {
+      "condition": "(isApplicationAddin || isDbApplicationAddin) && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"",
+      "description": "Opens Application.cs in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
+    },
+    {
+      "condition": "isCommandAddin && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"",
+      "description": "Opens Command.cs in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
+    }
+  ],
+  "SpecialCustomOperations": {
+    "*.addin": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [
+              "#if"
+            ],
+            "else": [
+              "#else"
+            ],
+            "elseif": [
+              "#elseif"
+            ],
+            "endif": [
+              "#endif"
+            ],
+            "trim": "true",
+            "wholeLine": "true"
+          }
+        }
+      ]
+    }
+  }
+}

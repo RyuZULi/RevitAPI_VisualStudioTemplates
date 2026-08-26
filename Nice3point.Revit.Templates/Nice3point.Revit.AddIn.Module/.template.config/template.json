@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json.schemastore.org/template",
+  "author": "Nice3point",
+  "name": "Revit AddIn Module",
+  "shortName": "revit-addin-module",
+  "identity": "Nice3point.Revit.AddIn.Module",
+  "defaultName": "RevitAddIn",
+  "sourceName": "Nice3point.Revit.AddIn.1",
+  "description": "Template for creating an empty module for multi-project Revit add-in",
+  "classifications": [
+    "Revit",
+    "Desktop",
+    "AddIn",
+    "Module"
+  ],
+  "tags": {
+    "type": "project",
+    "language": "C#",
+    "platform": ".NET"
+  },
+  "preferNameDirectory": true,
+  "placeholderFilename": "keep.folder",
+  "symbols": {
+    "addinUiWpf": {
+      "type": "parameter",
+      "displayName": "WPF support",
+      "datatype": "bool",
+      "description": "MVVM architecture and WPF UI components",
+      "defaultValue": "true"
+    }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "!addinUiWpf",
+          "exclude": [
+            "Models/**",
+            "Views/**",
+            "ViewModels/**"
+          ]
+        }
+      ]
+    }
+  ]
+}

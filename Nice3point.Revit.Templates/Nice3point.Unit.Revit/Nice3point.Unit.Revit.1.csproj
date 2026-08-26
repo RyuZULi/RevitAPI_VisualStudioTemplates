@@ -1,0 +1,18 @@
+<Project Sdk="Nice3point.Revit.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <EnableTUnitPolyfills>false</EnableTUnitPolyfills>
+        <Configurations>Debug.R21;Debug.R23;Debug.R24;Debug.R25;Debug.R26;Debug.R27</Configurations>
+        <Configurations>$(Configurations);Release.R21;Release.R23;Release.R24;Release.R25;Release.R26;Release.R27</Configurations>
+        <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Nice3point.Unit.Revit._1</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="$(RevitVersion).*"/>
+        <PackageReference Include="Nice3point.TUnit.Revit" Version="$(RevitVersion).*"/>
+        <PackageReference Include="TUnit" Version="1.28.7"/>
+        <PackageReference Include="Polyfill" Version="10.0.0"/>
+    </ItemGroup>
+
+</Project>

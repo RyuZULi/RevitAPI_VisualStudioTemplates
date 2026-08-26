@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/template",
+  "author": "Nice3point",
+  "name": "Revit Test (TUnit)",
+  "shortName": "revit-tunit",
+  "identity": "Nice3point.TUnit.Revit",
+  "defaultName": "RevitTests",
+  "sourceName": "Nice3point.Unit.Revit.1",
+  "description": "Template for creating unit tests for Revit API",
+  "classifications": [
+    "Revit",
+    "Desktop",
+    "API",
+    "Test",
+    "TUnit"
+  ],
+  "tags": {
+    "type": "project",
+    "language": "C#",
+    "platform": ".NET"
+  },
+  "preferNameDirectory": true,
+  "placeholderFilename": "keep.folder"
+}

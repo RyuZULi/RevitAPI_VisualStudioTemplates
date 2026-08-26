@@ -1,0 +1,48 @@
+trigger:
+  tags:
+    include:
+      - '*'
+
+pr: none
+
+parameters:
+  - name: version
+    displayName: "Release version"
+    type: string
+    default: ""
+
+jobs:
+  - job: PublishRelease
+    displayName: "Publish release"
+    pool:
+      vmImage: "windows-2025"
+    steps:
+      - checkout: self
+        persistCredentials: true
+        fetchDepth: 0
+
+      - script: |
+          set -e
+          git tag ${{ parameters.version }}
+          git push origin ${{ parameters.version }}
+        displayName: "Create release tag"
+        condition: and(succeeded(), ne('${{ parameters.version }}', ''))
+
+      - task: Cache@2
+        displayName: "Cache packages"
+        inputs:
+          key: $(Agent.OS) | nuget-packages | global.json, **/*.csproj, **/Directory.Build.props, **/Directory.Packages.props
+          restoreKeys: $(Agent.OS) | nuget-packages
+          path: ~/.nuget/packages
+
+      - script: dotnet run -c Release -- pack
+        displayName: "Publish release"
+        workingDirectory: "build"
+        env:
+          DOTNET_ENVIRONMENT: $[ if(or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/tags/')), 'Production', 'Development' ) ]
+          Build__Version: ${{ parameters.version }}
+
+      - task: PublishBuildArtifacts@1
+        inputs:
+          ArtifactName: Nice3point.Revit.AddIn.1
+          PathtoPublish: 'output'

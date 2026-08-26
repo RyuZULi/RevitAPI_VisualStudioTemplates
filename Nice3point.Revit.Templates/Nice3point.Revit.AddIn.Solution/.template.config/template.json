@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json.schemastore.org/template",
+  "author": "Nice3point",
+  "name": "Revit AddIn Solution",
+  "shortName": "revit-addin-sln",
+  "identity": "Nice3point.Revit.AddIn.Solution",
+  "defaultName": "RevitAddIn",
+  "sourceName": "Nice3point.Revit.AddIn.1",
+  "description": "Template for creating a solution structure for Revit add-ins",
+  "classifications": [
+    "Revit",
+    "Desktop",
+    "AddIn",
+    "Solution"
+  ],
+  "tags": {
+    "type": "solution",
+    "editorTreatAs": "solution",
+    "language": "C#",
+    "platform": ".NET"
+  },
+  "placeholderFilename": "keep.folder",
+  "guids": [
+    "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA",
+    "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB",
+    "CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC"
+  ],
+  "symbols": {
+    "ciProvider": {
+      "type": "parameter",
+      "displayName": "Pipeline",
+      "description": "Automated CI/CD pipeline configuration",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "Disabled",
+          "displayName": "Disabled",
+          "description": "Pipeline not used"
+        },
+        {
+          "choice": "Azure",
+          "displayName": "Azure DevOps",
+          "description": "Azure DevOps pipeline"
+        },
+        {
+          "choice": "GitHub",
+          "displayName": "GitHub Actions",
+          "description": "GitHub Actions pipeline"
+        }
+      ],
+      "defaultValue": "GitHub"
+    },
+    "includeInstaller": {
+      "type": "parameter",
+      "displayName": "Installer support",
+      "datatype": "bool",
+      "description": "Windows Installer (MSI) project configuration",
+      "defaultValue": "true"
+    },
+    "includeBundle": {
+      "type": "parameter",
+      "displayName": "Bundle support",
+      "datatype": "bool",
+      "description": "Autodesk App Store deployment bundle structure",
+      "defaultValue": "false"
+    },
+    "includeTests": {
+      "type": "parameter",
+      "displayName": "Testing support",
+      "datatype": "bool",
+      "description": "Unit testing solution configuration",
+      "defaultValue": "false"
+    },
+    "isCiDisabled": {
+      "type": "computed",
+      "value": "ciProvider == \"Disabled\""
+    },
+    "isAzureCi": {
+      "type": "computed",
+      "value": "ciProvider == \"Azure\""
+    },
+    "isGitHubCi": {
+      "type": "computed",
+      "value": "ciProvider == \"GitHub\""
+    },
+    "hasArtifacts": {
+      "type": "computed",
+      "value": "includeBundle || includeInstaller"
+    },
+    "isReleaseCi": {
+      "type": "computed",
+      "value": "isGitHubCi || isAzureCi"
+    }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "exclude": [
+            "Nice3point.Revit.AddIn.1.slnx"
+          ]
+        },
+        {
+          "condition": "!hasArtifacts",
+          "exclude": [
+            ".run/Pack.run.xml"
+          ]
+        },
+        {
+          "condition": "!isAzureCi || !hasArtifacts",
+          "exclude": [
+            "azure-pipelines.yml"
+          ]
+        },
+        {
+          "condition": "!isGitHubCi",
+          "exclude": [
+            ".github/**",
+            "Changelog.md",
+            "build/Modules/GenerateChangelogModule.cs",
+            "build/Modules/GenerateGitHubChangelogModule.cs",
+            "build/Modules/PublishGithubModule.cs",
+            "build/Options/PublishOptions.cs"
+          ]
+        },
+        {
+          "condition": "!includeInstaller",
+          "exclude": [
+            "install/**",
+            "build/Modules/CreateInstallerModule.cs"
+          ]
+        },
+        {
+          "condition": "!includeBundle",
+          "exclude": [
+            "build/Modules/CreateBundleModule.cs",
+            "build/Options/BundleOptions.cs"
+          ]
+        },
+        {
+          "condition": "!includeTests",
+          "exclude": [
+            "tests/**",
+            "build/Modules/TestProjectModule.cs"
+          ]
+        }
+      ]
+    }
+  ],
+  "primaryOutputs": [
+    {
+      "path": "Readme.md"
+    }
+  ],
+  "postActions": [
+    {
+      "condition": "HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"",
+      "description": "Opens Readme.md in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
+    }
+  ],
+  "SpecialCustomOperations": {
+    "Readme.md": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [
+              "---#if"
+            ],
+            "else": [
+              "---#else"
+            ],
+            "elseif": [
+              "---#elseif"
+            ],
+            "endif": [
+              "---#endif"
+            ],
+            "trim": "true",
+            "wholeLine": "true"
+          }
+        }
+      ]
+    },
+    "*.slnx": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [
+              "#if"
+            ],
+            "else": [
+              "#else"
+            ],
+            "elseif": [
+              "#elseif"
+            ],
+            "endif": [
+              "#endif"
+            ],
+            "trim": "true",
+            "wholeLine": "true"
+          }
+        }
+      ]
+    },
+    "*.json": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [
+              "#if"
+            ],
+            "else": [
+              "#else"
+            ],
+            "elseif": [
+              "#elseif"
+            ],
+            "endif": [
+              "#endif"
+            ],
+            "trim": "false",
+            "wholeLine": "false"
+          }
+        }
+      ]
+    }
+  }
+}
