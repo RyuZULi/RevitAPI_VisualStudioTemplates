@@ -1,9 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/template",
   "author": "Nice3point",
-  "name": "Revit Test (TUnit)",
-  "shortName": "revit-tunit",
-  "identity": "Nice3point.TUnit.Revit",
+  "name": "Revit Test (TUnit) (Self)",
+  "shortName": "revit-tunit-self",
+  "identity": "Nice3point.TUnit.Revit.Self",
   "defaultName": "RevitTests",
   "sourceName": "Nice3point.Unit.Revit.1",
   "description": "Template for creating unit tests for Revit API",

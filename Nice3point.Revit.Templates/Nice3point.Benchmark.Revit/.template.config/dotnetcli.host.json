@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/dotnetcli.host",
   "usageExamples": [
-    "dotnet new revit-benchmark"
+    "dotnet new revit-benchmark-self"
   ]
 }

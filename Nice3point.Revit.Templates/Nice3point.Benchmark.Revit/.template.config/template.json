@@ -1,9 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/template",
   "author": "Nice3point",
-  "name": "Revit Benchmark",
-  "shortName": "revit-benchmark",
-  "identity": "Nice3point.BenchmarkDotNet.Revit",
+  "name": "Revit Benchmark (Self)",
+  "shortName": "revit-benchmark-self",
+  "identity": "Nice3point.BenchmarkDotNet.Revit.Self",
   "defaultName": "RevitBenchmark",
   "sourceName": "Nice3point.Benchmark.Revit.1",
   "description": "Template for creating performance benchmarks for Revit API",

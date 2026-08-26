@@ -7,7 +7,7 @@
     }
   },
   "usageExamples": [
-    "dotnet new revit-addin-module",
-    "dotnet new revit-addin-module --wpf"
+    "dotnet new revit-addin-module-self",
+    "dotnet new revit-addin-module-self --wpf"
   ]
 }

@@ -1,9 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/template",
   "author": "Nice3point",
-  "name": "Revit AddIn Solution",
-  "shortName": "revit-addin-sln",
-  "identity": "Nice3point.Revit.AddIn.Solution",
+  "name": "Revit AddIn Solution (Self)",
+  "shortName": "revit-addin-sln-self",
+  "identity": "Nice3point.Revit.AddIn.Solution.Self",
   "defaultName": "RevitAddIn",
   "sourceName": "Nice3point.Revit.AddIn.1",
   "description": "Template for creating a solution structure for Revit add-ins",

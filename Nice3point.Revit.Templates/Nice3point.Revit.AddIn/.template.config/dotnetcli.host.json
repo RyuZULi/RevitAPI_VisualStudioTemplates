@@ -19,7 +19,7 @@
     }
   },
   "usageExamples": [
-    "dotnet new revit-addin",
-    "dotnet new revit-addin --addin command --wpf --di hosting --logger"
+    "dotnet new revit-addin-self",
+    "dotnet new revit-addin-self --addin command --wpf --di hosting --logger"
   ]
 }

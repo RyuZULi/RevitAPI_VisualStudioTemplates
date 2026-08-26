@@ -15,7 +15,7 @@
     }
   },
   "usageExamples": [
-    "dotnet new revit-addin-sln",
-    "dotnet new revit-addin-sln --pipeline github --installer --bundle"
+    "dotnet new revit-addin-sln-self",
+    "dotnet new revit-addin-sln-self --pipeline github --installer --bundle"
   ]
 }
