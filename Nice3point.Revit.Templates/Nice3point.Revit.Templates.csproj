@@ -7,16 +7,14 @@
 
     <PropertyGroup>
         <PackageType>Template</PackageType>
-        <PackageId>Nice3point.Revit.Templates</PackageId>
-        <Authors>Nice3point</Authors>
-        <Description>Templates for Revit add-ins development</Description>
-        <PackageTags>autodesk;revit;templates;addin</PackageTags>
-        <RepositoryType>git</RepositoryType>
-        <RepositoryUrl>https://github.com/Nice3point/RevitTemplates</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/Nice3point/RevitTemplates</PackageProjectUrl>
-        <PackageIcon>images/PackageIcon.png</PackageIcon>
-        <PackageLicenseFile>License.md</PackageLicenseFile>
-        <PackageReadmeFile>Readme.md</PackageReadmeFile>
+        <!-- 必須跟官方 Nice3point.Revit.Templates 不同 ID，否則安裝時會覆蓋掉對方的官方套件，
+             這樣就失去了樣板短名稱加 -self 後綴（可與官方並存）的意義 -->
+        <PackageId>Nice3point.Revit.Templates.Self</PackageId>
+        <Version>6.2.3.1</Version>
+        <Authors>CEC</Authors>
+        <Description>CEC 內部使用的 Revit 外掛開發樣板，基於 Nice3point/RevitTemplates v6.2.0 客製化。短名稱皆帶 -self 後綴，可與官方 Nice3point.Revit.Templates 並存。需要 Visual Studio 2026 或 dotnet SDK 10 以上才能建置產生的專案。</Description>
+        <PackageTags>autodesk;revit;templates;addin;cec</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -32,9 +30,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="..\..\.nuget\PackageIcon.png" PackagePath="images/" Pack="true" Visible="false"/>
-        <None Include="..\..\License.md" PackagePath="" Pack="true" Visible="false"/>
-        <None Include="..\..\Readme.md" PackagePath="" Pack="true" Visible="false"/>
+        <!-- 官方 repo 的版面是 source\Nice3point.Revit.Templates\，所以 ..\..\ 是 repo 根目錄。
+             這個 repo 少一層，..\ 才是根目錄；官方的 PackageIcon.png / License.md 也沒有一起 clone 進來 -->
+        <None Include="..\README.md" PackagePath="" Pack="true" Visible="false"/>
         <Content Include="**\*" Exclude="**\bin\**\*;**\obj\**\*;*.csproj"/>
     </ItemGroup>
 

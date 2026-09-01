@@ -1,0 +1,4 @@
+# dotnet pack 會在 Nice3point.Revit.Templates/ 底下產生這些，不要進版控
+bin/
+obj/
+*.nupkg
