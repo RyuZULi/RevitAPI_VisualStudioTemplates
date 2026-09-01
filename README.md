@@ -40,39 +40,176 @@ BinaryPrimitivesPolyfill.cs: error CS1001: 必須是識別項
 | Revit Benchmark | `revit-benchmark-self` | BenchmarkDotNet 效能測試 |
 | Revit Test (TUnit) | `revit-tunit-self` | TUnit 單元測試 |
 
-## 安裝方式（維護者：從原始碼資料夾安裝）
+---
 
-跟官方套件短名稱不同，**不需要先移除官方 `Nice3point.Revit.Templates`**，兩邊可以並存：
+# 使用者篇：安裝與更新
+
+> 這一段是給「拿到 `.nupkg` 檔的同事」看的。維護者請看下面的「維護者篇」。
+
+## 事前準備
+
+1. **Visual Studio 2026，或 .NET SDK 10 以上**。VS 2022 無法建置這些樣板產生的專案，理由見本文件開頭的環境需求警告。檢查版本：
+
+   ```
+   dotnet --version
+   ```
+
+   要 `10.x` 以上。
+
+2. **NuGet 要連得到 CEC 內部 Feed**。樣板依賴 `CEC_Common` 與 `Microsoft.Office.Interop.Excel`，連不到的話建立專案沒問題，但一建置就會還原失敗。
+
+## 安裝與更新
+
+你會拿到三個檔案，**請放在同一個資料夾**：
 
 ```
-dotnet new install "D:\Revit API\C#\RevitAPI_VisualStudioTemplates\Nice3point.Revit.Templates"
+Nice3point.Revit.Templates.Self.<版本>.nupkg   ← 樣板本體
+install.cmd                                    ← 安裝腳本（雙擊這個）
+install.ps1                                    ← 安裝腳本的實作
 ```
 
-安裝後即可用 `dotnet new revit-addin-self -o <輸出路徑>` 等指令建立新專案（注意短名稱都要加 `-self`），或直接在 Visual Studio 的「建立新專案」精靈中選取對應樣板（名稱後面會標示 `(Self)`）。
+### 方式一：雙擊 `install.cmd`（推薦）
 
-以資料夾安裝時，template engine 是**即時讀取那個資料夾**（不會複製一份），所以改完 `.csproj` 不必重新安裝，但**資料夾不能搬走或刪掉**，否則樣板就壞了。
+**安裝和更新都是同一個動作，不用區分。** 腳本會自動：
 
-## 發佈給其他同事
+1. 檢查 `dotnet` 是否存在、SDK 版本夠不夠（低於 10 會警告）
+2. 找出資料夾裡**版號最新**的 `.nupkg`
+3. `dotnet new uninstall` 移除所有舊版（沒裝過也不會出錯）
+4. `dotnet new install` 安裝新版
+5. 列出安裝結果供你確認
 
-推薦打包成單一 `.nupkg` 檔再給人，不要直接壓縮資料夾（見下方說明）。在 repo 根目錄執行：
+所以之後每次收到新版，就是**把新的 `.nupkg` 丟進同一個資料夾，再雙擊一次 `install.cmd`**。舊的 nupkg 留著也沒關係，腳本只會挑版號最大的。
 
-```
-dotnet pack "Nice3point.Revit.Templates\Nice3point.Revit.Templates.csproj" -o dist
-```
+### 方式二：手動下指令
 
-會產出 `dist\Nice3point.Revit.Templates.Self.<版本>.nupkg`。把這個檔案給同事，請他在 PowerShell 執行：
-
-```
-dotnet new install "C:\下載路徑\Nice3point.Revit.Templates.Self.6.2.3.1.nupkg"
-```
-
-之後就能用 `dotnet new revit-addin-self`，或在 Visual Studio「建立新專案」裡選帶 `(Self)` 的樣板。要移除：
+不想用腳本的話，開 PowerShell 或命令提示字元，**依序**執行這兩行：
 
 ```
 dotnet new uninstall Nice3point.Revit.Templates.Self
 ```
 
-**改版後要重發**：把 `Nice3point.Revit.Templates.csproj` 裡的 `<Version>` 加上去，重新 `dotnet pack`，同事再 `dotnet new install` 一次新的 nupkg 即可（會直接覆蓋舊版，不必先 uninstall）。
+```
+dotnet new install "C:\下載路徑\Nice3point.Revit.Templates.Self.6.2.3.2.nupkg"
+```
+
+**順序不能顛倒，而且第一行不能省略**（原因見下）。第一次安裝的人也照跑就好 —— 沒裝過的話第一行只會印一行「找不到範本套件」，離開代碼 0，不影響第二行。
+
+確認裝好了：
+
+```
+dotnet new list revit
+```
+
+應該會看到 6 個名稱帶 `(Self)` 的樣板。
+
+> **不需要先移除官方的 `Nice3point.Revit.Templates`**，兩邊可以並存 —— 這份樣板的短名稱都加了 `-self` 後綴（`revit-addin-self`、`revit-addin-application-self`…），刻意設計成不跟官方衝突。
+
+### ⚠ 為什麼不能只跑 install
+
+**新版不會取代舊版，兩個版本會同時留著。** 實測直接安裝新版（沒先移除）的結果：
+
+```
+> dotnet new install ...Self.1.0.1.nupkg
+將使用來自 'ZZ Probe Template' 的範本。若要解決此衝突，請解除安裝發生衝突的範本套件。
+成功: ZZTemplateProbe.Self@1.0.1 已安裝下列範本:
+
+> dotnet new uninstall          # 列出已安裝清單
+   ZZTemplateProbe.Self
+      版本: 1.0.0               ← 舊版還在
+   ZZTemplateProbe.Self
+      版本: 1.0.1               ← 新版也在
+```
+
+會跳出**衝突警告**，然後兩版並存。實測上這次是新版勝出，但這是由 template engine 自行仲裁的，不保證每次都如此，也讓「你到底裝的是哪一版」變得無法確定。所以請養成**先 uninstall 再 install** 的習慣。
+
+**`--force` 也解決不了。** 它只是把衝突訊息從錯誤降級成警告，兩個版本一樣並存：
+
+```
+> dotnet new install ...1.0.1.nupkg --force
+警告:
+下列範本使用相同的身分識別 'ZZTemplateProbe.Self.Item':
+  • 'ZZ Probe Template' 來自 'ZZTemplateProbe.Self@1.0.0'
+  • 'ZZ Probe Template' 來自 'ZZTemplateProbe.Self@1.0.1'
+```
+
+**`dotnet new` 沒有「更新」這種指令**，只能自己 uninstall + install —— 這也就是 `install.cmd` 存在的原因。
+
+補充兩點（都實測過）：
+
+- `dotnet new uninstall Nice3point.Revit.Templates.Self` 給的是**套件 ID，不是檔案路徑**，而且會**一次移除所有版本**，不用一版一版清。
+- 如果你是第一次安裝、根本沒裝過，先跑 uninstall 只會印一行「找不到範本套件」，**離開代碼是 0，不會有任何副作用**。所以上面那兩行可以無腦照跑，不必先確認自己有沒有裝過。
+
+## 建立專案
+
+```
+dotnet new revit-addin-self -o "D:\你的路徑\MyAddin" -n MyAddin
+```
+
+- `-o`（output）= 專案放在哪個資料夾，不存在會自動建立
+- `-n`（name）= 專案名稱 / 根命名空間；省略的話用資料夾名
+
+> ⚠ **`-o` 不要省略。** 省略時 `dotnet new` 會直接在**目前工作目錄**建立專案。命令提示字元預設停在 `C:\Windows`，在那裡裸跑會撞到系統資料夾、噴 `Access to the path is denied`；用系統管理員權限硬跑更糟，會真的把檔案散落到 `C:\Windows`。
+
+或者更簡單 —— 直接開 **Visual Studio 2026 →「建立新專案」**，搜尋 `Revit`，選名稱後面標 `(Self)` 的那個。精靈會要你指定存放位置，就不會有目錄站錯的問題。
+
+## 完全移除
+
+```
+dotnet new uninstall Nice3point.Revit.Templates.Self
+```
+
+---
+
+# 維護者篇
+
+## 從原始碼資料夾安裝（開發時用）
+
+```
+dotnet new install "D:\Revit API\C#\RevitAPI_VisualStudioTemplates\Nice3point.Revit.Templates"
+```
+
+以資料夾安裝時，template engine 是**即時讀取那個資料夾**（不會複製一份），所以：
+
+- **改完 `.csproj` 不必重新安裝**，下次 `dotnet new` 直接拿到新內容（已實測確認）
+- 改 `.template.config/template.json`（選項、名稱、identity 這類中繼資料）**可能**要重裝一次讓快取更新
+- **資料夾不能搬走或刪掉**，否則樣板直接失效
+
+## 發佈給其他同事
+
+打包成單一 `.nupkg` 再給人，不要直接壓縮資料夾（理由見下）。流程：
+
+1. **先把 `Nice3point.Revit.Templates.csproj` 的 `<Version>` 遞增。** 內容改了就一定要換版號 —— 同版號不同內容會讓「誰裝的是哪一版」完全無法追查。目前是 `6.2.3.2`（前三碼對齊官方基底版本 6.2.3，第四碼是我們的修訂序號）。
+
+2. 在 repo 根目錄執行：
+
+   ```
+   dotnet pack "Nice3point.Revit.Templates\Nice3point.Revit.Templates.csproj" -o dist
+   ```
+
+   產出 `dist\Nice3point.Revit.Templates.Self.<版本>.nupkg`。
+
+3. **把三個檔案一起給同事**（壓成一個 zip 最省事）：
+
+   ```
+   dist\Nice3point.Revit.Templates.Self.<版本>.nupkg
+   dist\install.cmd
+   dist\install.ps1
+   ```
+
+   `install.cmd` / `install.ps1` 是版本無關的，寫死的只有套件 ID，**改版時不用跟著改**。腳本會自動抓資料夾裡版號最新的 nupkg。
+
+   > ⚠ **`install.ps1` 必須存成 UTF-8 with BOM，換行用 CRLF。** Windows PowerShell 5.1（也就是 `powershell.exe`，Windows 內建那個）讀 `.ps1` 時，沒有 BOM 就會用系統 ANSI 字碼頁解讀，中文註解和字串全部變亂碼，直接噴語法錯誤跑不起來。編輯這個檔案時務必確認編碼有保住（VS Code 右下角會顯示 `UTF-8 with BOM`）。
+   >
+   > 同理，腳本開頭那行 `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8` 和 `install.cmd` 裡的 `chcp 65001` 也不要拿掉，否則腳本自己印的中文訊息會是亂碼（dotnet CLI 的輸出正常，只有腳本自己的會壞，看起來會很怪）。
+
+打包後建議快速驗一下內容有沒有問題：
+
+```
+cd <暫存資料夾>
+unzip -q "<repo>\dist\Nice3point.Revit.Templates.Self.<版本>.nupkg"
+```
+
+檢查：6 個 `template.json`、3 份 `Properties\Resources.resx`、3 個 `CEC.ico`、**0 個 bin/obj 檔案**。
 
 ### 為什麼不建議直接壓縮資料夾
 
@@ -84,17 +221,15 @@ dotnet new uninstall Nice3point.Revit.Templates.Self
 
 nupkg 則是安裝時複製到 `%USERPROFILE%\.templateengine\packages\`，自成一份，跟來源檔案脫鉤。
 
-### 收件人的環境需求
+### 想把官方套件裝回來
 
-**對方必須有 Visual Studio 2026 或 .NET SDK 10 以上**，理由見本文件開頭的環境需求警告。另外 `CEC_Common` / `Microsoft.Office.Interop.Excel` 這兩個依賴需要對方的 NuGet 設定能連到 CEC 內部 Feed，否則建置時會還原失敗。
-
-若之前已經按舊版說明移除過官方套件，想裝回來的話：
+若之前曾經移除過官方套件（早期版本的說明要求這樣做，現在不需要了）：
 
 ```
 dotnet new install Nice3point.Revit.Templates
 ```
 
-## 更新官方樣板時的處理方式
+## 官方樣板改版時的同步方式
 
 官方樣板改版後，若要同步更新這個 repo：
 

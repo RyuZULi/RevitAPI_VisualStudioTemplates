@@ -10,7 +10,7 @@
         <!-- 必須跟官方 Nice3point.Revit.Templates 不同 ID，否則安裝時會覆蓋掉對方的官方套件，
              這樣就失去了樣板短名稱加 -self 後綴（可與官方並存）的意義 -->
         <PackageId>Nice3point.Revit.Templates.Self</PackageId>
-        <Version>6.2.3.1</Version>
+        <Version>6.2.3.2</Version>
         <Authors>CEC</Authors>
         <Description>CEC 內部使用的 Revit 外掛開發樣板，基於 Nice3point/RevitTemplates v6.2.0 客製化。短名稱皆帶 -self 後綴，可與官方 Nice3point.Revit.Templates 並存。需要 Visual Studio 2026 或 dotnet SDK 10 以上才能建置產生的專案。</Description>
         <PackageTags>autodesk;revit;templates;addin;cec</PackageTags>

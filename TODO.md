@@ -64,7 +64,20 @@ CEC 內部使用的 Revit 外掛開發樣板（`dotnet new` 專案樣板 / Visua
 
    另外補了 repo 根目錄的 `.gitignore`（`bin/`、`obj/`、`*.nupkg`）——`dotnet pack` 會在 `Nice3point.Revit.Templates\` 底下產生 `bin` / `obj`，而**那個資料夾同時是 `dotnet new` 的即時掛載點**，不清掉會污染樣板來源。實測 pack 出來的 nupkg 內容乾淨，6 個樣板齊全，沒有誤包 bin/obj。
 
-   發佈流程和收件人的安裝指令都寫在 `README.md` 的「發佈給其他同事」章節。
+   發佈流程和收件人的安裝指令都寫在 `README.md` 的「使用者篇」與「維護者篇」章節。
+
+   **`dotnet new install` 的更新語意（實測結果，README 早期版本寫錯過，已更正）**：用一個拋棄式測試樣板套件實測（1.0.0 → 1.0.1），結論是——
+
+   - **新版不會取代舊版**。直接 `dotnet new install <新版>` 會印出衝突警告「將使用來自 'X' 的範本。若要解決此衝突，請解除安裝發生衝突的範本套件。」，然後**兩個版本同時留在安裝清單裡**。實測該次是新版勝出，但那是 template engine 自行仲裁的結果，不保證穩定，也讓「到底裝的是哪一版」變得無法確認。
+   - 所以**正確的更新流程是先 uninstall 再 install**。
+   - `dotnet new uninstall <PackageId>` 會**一次移除該套件的所有版本**，不需要逐版清理。
+   - 對沒安裝過的套件跑 uninstall，只會印「找不到範本套件」，**離開代碼 0，無副作用**，所以那兩行可以無腦照跑。
+   - 注意 `uninstall` 的參數：**nupkg 安裝的用「套件 ID」，資料夾安裝的用「資料夾路徑」**，兩者不同。`dotnet new uninstall`（不帶參數）會列出清單並直接告訴你每一筆正確的解除安裝指令。
+   - **`--force` 解決不了這件事**（也實測過）。它只是把衝突訊息從錯誤降級成警告（`警告: 下列範本使用相同的身分識別 ...`），兩個版本一樣並存。`dotnet new` **沒有「更新」指令**。
+
+   因此在 `dist\` 底下放了 **`install.cmd` + `install.ps1`** 兩個腳本，要跟 nupkg 一起發給同事。腳本會自動找出資料夾裡版號最新的 nupkg，先 uninstall 再 install，並檢查 SDK 版本。**腳本是版本無關的**（只寫死套件 ID），改版時不用跟著改，同事之後收到新版只要把 nupkg 丟進同資料夾再雙擊一次。
+
+   ⚠️ **`install.ps1` 必須存成 UTF-8 with BOM + CRLF**。Windows PowerShell 5.1（`powershell.exe`）讀 `.ps1` 沒有 BOM 就會用系統 ANSI 字碼頁解讀，中文全變亂碼並直接噴語法錯誤（`字串缺少結束字元`、`遺漏 '}'`）。這在開發時實際踩到兩次——第一次是腳本本身，第二次是我寫來檢查腳本的檢查腳本。另外腳本開頭的 `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8` 與 `install.cmd` 的 `chcp 65001` 也不能拿掉，否則會出現「dotnet 的中文正常、腳本自己印的中文是亂碼」這種很怪的畫面。`install.cmd` 同樣用 CRLF。
 
 7. **Excel COM interop 相關的兩項調整**（僅 `revit-addin` / `revit-addin-application` / `revit-addin-module` 三個樣板），依使用者要求加入：
 
