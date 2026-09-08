@@ -15,7 +15,7 @@ CEC 內部使用的 Revit 外掛開發樣板（`dotnet new` 專案樣板 / Visua
    注意：**只要加進 `<Configurations>` 就好**，不需要寫 `RevitVersion` / `TargetFramework` 的 PropertyGroup，原因見下方「Nice3point.Revit.Sdk 幫你做了什麼」。
 
 2. **內建 CEC 依賴套件**（僅 `revit-addin` / `revit-addin-application` / `revit-addin-module` 三個樣板，因為只有這三個是「單一外掛專案」性質，benchmark/tunit/sln 不需要）：
-   - `PackageReference CEC_Common`（目前寫死 `1.0.3`。原本是照抄 `CEC_Detection.csproj` 的 `1.0.2`，後依使用者要求升到 `1.0.3`，順帶解決了舊版在 R26 / R27 無法解析的問題，見下方「已解決」）
+   - `PackageReference CEC_Common`（目前寫死 `1.0.4`。原本是照抄 `CEC_Detection.csproj` 的 `1.0.2`，後依使用者要求升到 `1.0.3`，順帶解決了舊版在 R26 / R27 無法解析的問題，見下方「已解決」，之後再升到 `1.0.4`）
    - `PackageReference Microsoft.Office.Interop.Excel`（`16.0.18925.20022`，同樣照抄自 `CEC_Detection.csproj`）
    - `Resources\CEC.ico` 圖示資源（二進位檔，來自 `CEC_Detection` 專案的 `Resources\CEC.ico`）。這是 WPF 的 `<Resource Include>`，用 pack URI 存取
    - `Properties\Resources.resx` + `Properties\Resources.Designer.cs`（後補的）。**注意這跟上面的 WPF `Resource` 是兩套不同機制**：前者是 VS 專案屬性「資源」頁籤那一套（`.resx` 強型別資源，程式碼寫 `Properties.Resources.CEC`），後者是 WPF 資源。使用者反映「CEC.ico 在 Resources 資料夾裡，但沒出現在專案屬性→資源中」，就是因為一開始只做了 WPF 那套。兩者 `CEC_Detection.csproj` 都有，所以樣板也都保留。
@@ -175,19 +175,29 @@ SDK 自動提供以下項目（可在 `~/.nuget/packages/nice3point.revit.sdk/<�
 - **樣板內容還停在官方 6.2.0，但 SDK 版本號寫的是 6.2.3**。把官方 `Nice3point.Revit.Templates.6.2.3.nupkg`（在 `~/.templateengine/packages/`）解開比對後，發現套件版本全面落後官方 6.2.3，**尚未對齊**：`Microsoft.Extensions.DependencyInjection` / `Hosting` 10.0.5→10.0.10、`Serilog` 4.3.1→4.4.0、`ILRepack` 2.0.44→2.0.46、`JetBrains.Annotations` 2025.2.4→2026.2.0、`Polyfill` 10.0.0→11.0.1。另外 `revit-addin` 的 `UseWPF` 條件官方 6.2.3 已從 `(!isDbApplicationAddin)` 改成 `(isApplicationAddin || useUi)`。
 - **`Properties\Settings.settings` / `Settings.Designer.cs` 沒有加進樣板**（專案屬性的「設定」頁籤）。`CEC_Detection.csproj` 有這組 `None Update` + `SettingsSingleFileGenerator` 接線，官方樣板從來沒有，**使用者只要求了「資源」那一套，「設定」這套還沒問過**。如果之後要補，作法跟「已完成的客製化」第 2 點的 `Resources.resx` 一樣。
 - **`Clipper2` 套件沒有加進樣板**，判斷是 `CEC_Detection` 幾何運算專屬，不是通用依賴。
-- **`CEC_Common` 目前釘在 `1.0.3`，之後仍要定期去 CEC 內部 NuGet Feed 確認有沒有更新版**（尤其是 Revit 出新版時）。
+- **`CEC_Common` 目前釘在 `1.0.4`，之後仍要定期去 CEC 內部 NuGet Feed 確認有沒有更新版**（尤其是 Revit 出新版時）。
+  （`1.0.4` 已檢查過 `build\CEC_Common.targets` 與 `lib\` 結構，支援清單、framework 對照表、`ValidateCECCommonReference` target 都與 `1.0.3` 相同，樣板不需要跟著改其他設定。）
 - **✅ 已解決：`CEC_Common` 在 R26 / R27 無法解析的問題（升到 1.0.3 後消失）**。保留紀錄是因為這個坑很典型，之後升 Revit 版本時可能再遇到類似狀況。
 
   舊版 `1.0.2` 的問題：這個套件用非標準佈局，DLL 放在 `lib\<TFM>\revit<版本>\CEC_Common.dll`（`revit<版本>` 那一層 NuGet 根本看不懂，只認得 `lib\<TFM>\`），所以套件自帶 `build\CEC_Common.targets` 依 `RevitVersion` 手工組出 `HintPath`。但 1.0.2 只有 `revit2019/2020/2021/2023/2024` 和 `lib\net8.0-windows\revit2025`，**沒有 2026、2027**，而且 targets 的 net8.0 分支寫死 `== '2025'`，其他一律落到 net48 分支去找不存在的 `lib\net48\revit2026`。結果是 **`warning MSB3245: 找不到組件 "CEC_Common"`，但建置仍然「成功」**——產出的 DLL 其實沒有 CEC_Common，要到執行期才炸，極易忽略。
 
   `1.0.3` 已修好：新增 `lib\net8.0-windows7.0\revit2026` 與 `lib\net10.0-windows7.0\revit2027`，framework 對照表改成完整的三段映射，並加了 `ValidateCECCommonReference` target，遇到不支援的版本會直接 **`Error` 中止建置**而不是靜默警告。已實測 R21 / R23 / R24 / R25 / R26 / R27 全部正確解析到對應的 `revit<版本>` 資料夾，0 警告 0 錯誤。
 
-  注意：**1.0.3 仍然不支援 Revit 2022**（支援清單是 2019, 2020, 2021, 2023, 2024, 2025, 2026, 2027）。目前樣板沒有 R22 組態，所以不影響；若之後要加回 2022，得先請套件維護者補。
+  注意：**1.0.4 仍然不支援 Revit 2022**（支援清單是 2019, 2020, 2021, 2023, 2024, 2025, 2026, 2027）。目前樣板沒有 R22 組態，所以不影響；若之後要加回 2022，得先請套件維護者補。
 - **這份 repo 的早期修改是在一個沒有 `dotnet` CLI 的雲端沙盒環境裡完成的**，那批修改只做了「文字/檔案層級」的正確性檢查（讀 `.template.config/template.json`、`.csproj` 內容比對），**沒有實際跑過 `dotnet new` 或建置驗證**。那個階段的驗證都是請使用者在自己的 Windows 機器上實際用 Visual Studio 建立測試專案來確認（例如上面第 4 點的 SDK 版本號問題，就是這樣測出來的）。如果你是接手的 AI 且沒有能操作使用者機器的管道，記得明確告知使用者「這個改動需要你在本機測試」，不要假設它一定沒問題。
 
   **第 5 點的修改已經在使用者機器上實測過**（dotnet 10.0.300）：`dotnet new revit-addin-self` 產出的專案含新設定；`dotnet msbuild -getProperty` 確認各組態的 `RevitVersion` / `TargetFramework` / `PlatformTarget` 推導正確；`dotnet build` 在 R21 / R23 / R24 / R25 / R26 / R27 全部建置成功（當時 R26 / R27 有 `CEC_Common` 1.0.2 的警告，升到 1.0.3 後已消失）。
 
-  **第 7 點的修改也已在本機實測**（dotnet 10.0.300）：`dotnet new revit-addin-self` 產出的 csproj 確認 target 完整未被模板引擎刪除；`dotnet build` 在 Debug.R21 / R23 / R24 / R25 / R26 / R27 六個組態全部 **0 警告 0 錯誤**；逐一檢查 `csc.exe` 的實際命令列，確認 `Microsoft.Office.Interop.Excel` 一律是 `/link:`、`Microsoft.CSharp.dll` 有進參考（net48 來自本 repo 加的 `<Reference>`，net8/net10 來自框架內建）、`CEC_Common` 解析到正確的 `1.0.3\lib\<TFM>\revit<版本>`；`bin` 底下確認沒有 `Microsoft.Office.Interop.Excel.dll`（內嵌成功的旁證）。
+  **第 7 點的修改也已在本機實測**（dotnet 10.0.300）：`dotnet new revit-addin-self` 產出的 csproj 確認 target 完整未被模板引擎刪除；`dotnet build` 在 Debug.R21 / R23 / R24 / R25 / R26 / R27 六個組態全部 **0 警告 0 錯誤**；逐一檢查 `csc.exe` 的實際命令列，確認 `Microsoft.Office.Interop.Excel` 一律是 `/link:`、`Microsoft.CSharp.dll` 有進參考（net48 來自本 repo 加的 `<Reference>`，net8/net10 來自框架內建）、`CEC_Common` 解析到正確的 `1.0.3\lib\<TFM>\revit<版本>`。
+
+  **更正（2026-09-08 實測）**：早期紀錄寫「`bin` 底下沒有 `Microsoft.Office.Interop.Excel.dll`」是錯的。實際重測六個組態，`csc` 確實一律用 `/link:`（內嵌有生效），但那顆 1.77 MB 的 Interop DLL **仍然會被複製到 `bin`**。原因是「要不要複製到輸出」是由 `ReferenceCopyLocalPaths` 決定，而這個項目清單在 `ResolveReferences` 內部就算好了；`EmbedExcelInterop` 是 `AfterTargets="ResolveReferences"` 才跑，來不及影響它。
+  若要連複製也一併擋掉，在 target 的 `<ItemGroup>` 裡補一行即可（已在暫存專案實測，R21 / R27 均 0 警告 0 錯誤，且 `bin` 不再出現該 DLL）：
+
+  ```xml
+  <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(FileName)' == '$(ExcelInteropAssembly)'"/>
+  ```
+
+  這一行**尚未**套用到樣板，等使用者決定。
 
 - **樣板是以「資料夾」形式註冊給 template engine 的**（`~/.templateengine/packages.json` 裡這個 repo 的 `MountPointUri` 直接指向 `D:\Revit API\C#\RevitAPI_VisualStudioTemplates\Nice3point.Revit.Templates`，不是複製成 nupkg）。**所以改完 `.csproj` 不需要重跑 `dotnet new install`**，下次 `dotnet new` 會直接讀資料夾裡的新內容（已實測確認）。但如果改的是 `.template.config/template.json`（選項、名稱、identity 那些中繼資料），就可能要重裝一次讓快取更新。
 

@@ -17,7 +17,7 @@ BinaryPrimitivesPolyfill.cs: error CS1001: 必須是識別項
 
 - **加回 Revit 2021 組態**：官方 6.2.0 版預設組態只有 R23～R27，2021 已被官方拿掉，這裡手動加回 `Debug.R21` / `Release.R21`。
 - **內建 CEC 依賴套件**（僅 `revit-addin-self` / `revit-addin-application-self` / `revit-addin-module-self` 三個樣板）：
-  - `PackageReference CEC_Common`（`1.0.3`，支援 Revit 2019/2020/2021/2023～2027，不支援 2022）
+  - `PackageReference CEC_Common`（`1.0.4`，支援 Revit 2019/2020/2021/2023～2027，不支援 2022）
   - `PackageReference Microsoft.Office.Interop.Excel`，並以 `EmbedExcelInterop` target 開啟**內嵌 Interop 型別**（NoPIA）。這樣輸出不必帶那顆 1.7 MB 的 Interop DLL，也不會跟同一個 Revit 行程裡其他外掛帶的版本互撞。注意這件事**不能**寫成 `<PackageReference><EmbedInteropTypes>true</EmbedInteropTypes></PackageReference>` —— NuGet 不會傳遞這個 metadata，寫了會被靜默忽略，細節見 [TODO.md](./TODO.md)
   - `Resources\CEC.ico` 圖示資源（WPF `Resource`，可用 pack URI 存取）
   - `Properties\Resources.resx` + `Resources.Designer.cs` — 把 `CEC.ico` 也註冊進 VS 專案屬性的**「資源」頁籤**，程式碼裡用 `Properties.Resources.CEC` 取得（型別 `byte[]`）。這跟上面的 WPF `Resource` 是兩套不同機制，CEC 既有專案兩者都有，所以樣板也都保留
